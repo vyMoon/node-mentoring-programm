@@ -1,105 +1,114 @@
 import { getStore } from '../store/store';
+import { Request, Response } from 'express';
+import { AutoSuggest } from './types/autosuggest.interface';
 
 export class User {
-  storeService = getStore();
+    storeService = getStore();
 
-  get(req, res) {
-      const { query } = req;
-      if (query.login) {
-          this.getAutoSuggestUsers(req, res);
-      } else {
-          this.getAllActiveUsers(req, res);
-      }
-  }
+    get(req: Request, res: Response): void {
+        const { query } = req;
+        if (query.login) {
+            this.getAutoSuggestUsers(req, res);
+        } else {
+            this.getAllActiveUsers(req, res);
+        }
+    }
 
-  getAutoSuggestUsers(req, res) {
-      const { query } = req;
-      if (!query.limit) {
-          query.limit = 5;
-      }
-      const users = this.storeService.getActiveUsersBylogin(query.login);
-      if (users.length < query.limit) {
-          res.status(200).json({
-              message: 'ok',
-              lenght: users.length,
-              users
-          });
-      } else {
-          res.status(200).json({
-              message: 'ok',
-              available: users.length,
-              lenght: query.limit,
-              users: users.slice(0, query.limit)
-          });
-      }
-  }
+    getAutoSuggestUsers(req: Request, res: Response): void {
+        const query = (req.query as unknown) as AutoSuggest;
 
-  getAllActiveUsers(req, res) {
-      const response = this.storeService.getAllActive();
-      res.status(200).json({
-          message: 'ok',
-          count: `${response.length}`,
-          users: response
-      });
-  }
+        if (!query.limit) {
+            query.limit = '5';
+        }
 
-  getUser(req, res) {
-      const { id: userId } = req.params;
-      const user = this.storeService.getUser(userId);
-      if (user) {
-          res.status(200).json({ response: 'ok', user });
-      } else {
-          res.status(400).json(
-              { error: `there is no user with id: ${userId}` }
-          );
-      }
-  }
+        if (isNaN(Number(query.limit)) || !query.login) {
+            res.status(400).json({ error: 'Bad request' });
+            return;
+        }
 
-  post(req, res) {
-      const user = this.storeService.saveUser(req.body);
-      if (user) {
-          res.status(200).json({
-              message: 'ok',
-              newUserData: user
-          });
-      } else {
-          res.status(500).json(
-              { error: 'somthing went wrong' }
-          );
-      }
-  }
+        const users = this.storeService.getActiveUsersBylogin(query.login);
+        if (users.length < Number(query.limit)) {
+            res.status(200).json({
+                message: 'ok',
+                lenght: users.length,
+                users
+            });
+        } else {
+            res.status(200).json({
+                message: 'ok',
+                available: users.length,
+                lenght: query.limit,
+                users: users.slice(0, Number(query.limit))
+            });
+        }
+    }
 
-  put(req, res) {
-      const user = this.storeService.updateUser(req.body);
-      if (user) {
-          res.status(200).json({
-              message: `user id ${user.id} updated!`,
-              newUserData: user
-          });
-      } else {
-          res.status(400).json(
-              { error: 'there is no such a user' }
-          );
-      }
-  }
+    getAllActiveUsers(req: Request, res: Response): void {
+        const response = this.storeService.getAllActive();
+        res.status(200).json({
+            message: 'ok',
+            count: `${response.length}`,
+            users: response
+        });
+    }
 
-  delete(req, res) {
-      const { id: userId } = req.params;
-      const user = this.storeService.deleteUser(userId);
-      if (user && user.isDeleted) {
-          res.status(200).json(
-              { message: `user id ${userId} has been deleted` }
-          );
-      } else {
-          res.status(400).json(
-              { error: `there is no user with id: ${userId}` }
-          );
-      }
-  }
+    getUser(req: Request, res: Response): void {
+        const { id: userId } = req.params;
+        const user = this.storeService.getUser(userId);
+        if (user) {
+            res.status(200).json({ response: 'ok', user });
+        } else {
+            res.status(400).json(
+                { error: `there is no user with id: ${userId}` }
+            );
+        }
+    }
 
-  badReques(req, res) {
-      res.status(400).json(
-          { error: 'bad request' }
-      );
-  }
+    post(req: Request, res: Response): void {
+        const user = this.storeService.saveUser(req.body);
+        if (user) {
+            res.status(200).json({
+                message: 'ok',
+                newUserData: user
+            });
+        } else {
+            res.status(500).json(
+                { error: 'somthing went wrong' }
+            );
+        }
+    }
+
+    put(req: Request, res: Response): void {
+        const user = this.storeService.updateUser(req.body);
+        if (user) {
+            res.status(200).json({
+                message: `user id ${user.id} updated!`,
+                newUserData: user
+            });
+        } else {
+            res.status(400).json(
+                { error: 'there is no such a user' }
+            );
+        }
+    }
+
+    delete(req: Request, res: Response): void {
+        const { id: userId } = req.params;
+        const user = this.storeService.deleteUser(userId);
+        if (user && user.isDeleted) {
+            res.status(200).json(
+                { message: `user id ${userId} has been deleted` }
+            );
+        } else {
+            res.status(400).json(
+                { error: `there is no user with id: ${userId}` }
+            );
+        }
+    }
+
+    badReques(req: Request, res: Response): void {
+        res.status(400).json(
+            { error: 'bad request' }
+        );
+    }
 }
