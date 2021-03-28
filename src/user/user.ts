@@ -1,9 +1,10 @@
-import { getStore } from '../store/store';
 import { Request, Response } from 'express';
+import { Store } from '../store/store';
 import { AutoSuggest } from './types/autosuggest.interface';
 
+
 export class User {
-    storeService = getStore();
+    constructor(private storeService: Store) {}
 
     get(req: Request, res: Response): void {
         const { query } = req;
@@ -14,7 +15,7 @@ export class User {
         }
     }
 
-    getAutoSuggestUsers(req: Request, res: Response): void {
+    private getAutoSuggestUsers(req: Request, res: Response): void {
         const query = (req.query as unknown) as AutoSuggest;
 
         if (!query.limit) {
@@ -43,7 +44,7 @@ export class User {
         }
     }
 
-    getAllActiveUsers(req: Request, res: Response): void {
+    private getAllActiveUsers(req: Request, res: Response): void {
         const response = this.storeService.getAllActive();
         res.status(200).json({
             message: 'ok',
@@ -80,16 +81,18 @@ export class User {
 
     put(req: Request, res: Response): void {
         const user = this.storeService.updateUser(req.body);
+        
         if (user) {
             res.status(200).json({
                 message: `user id ${user.id} updated!`,
                 newUserData: user
             });
-        } else {
-            res.status(400).json(
-                { error: 'there is no such a user' }
-            );
+            return;
         }
+        res.status(400).json(
+            { error: 'there is no such a user' }
+        );
+        
     }
 
     delete(req: Request, res: Response): void {

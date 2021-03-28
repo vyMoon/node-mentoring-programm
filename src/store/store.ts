@@ -1,6 +1,6 @@
 import { User } from '../user/types/user.interface';
 
-class Store {
+export class Store {
 	store: { [key: string]: User } = {
 		'1': {
 			id: '1',
