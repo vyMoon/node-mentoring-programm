@@ -1,3 +1,4 @@
+import { UserForFrontEnd } from '../user/types/user-for-frontend.interface';
 import { User } from '../user/types/user.interface';
 
 export class Store {
@@ -53,7 +54,7 @@ export class Store {
 		}
 	};
 
-	getUser(id: string): User | null {
+	getUserById(id: string): User | null {
 		const user = this.store[id];
 		if (user && !user.isDeleted) {
 			return user;
@@ -61,19 +62,45 @@ export class Store {
 		return null;
 	}
 
-	getAllActive(): User[] {
-		const ids = this.getIds();
-		return ids.filter(id => !this.store[id].isDeleted)
-			.map(id => this.store[id]);
+	getUser(id: string): UserForFrontEnd | null {
+		const user = this.getUserById(id);
+		if (user === null) {
+			return null;
+		}
+		return this.sanitizeData(user);
 	}
 
-	getActiveUsersBylogin(login: string): User[] {
+	 private sanitizeData(user: User): UserForFrontEnd {
+		return {
+			id: user.id,
+			login: user.login,
+			password: user.password,
+			age: user.age,
+		}
+	}
+
+	getAllActive(): UserForFrontEnd[] {
+		const ids = this.getIds();
+		return ids.filter(id => !this.store[id].isDeleted)
+			.map(id => this.store[id])
+			.map(this.sanitizeData);
+	}
+
+	getActiveUsersBylogin(login: string): UserForFrontEnd[] {
 		return this.getAllActive()
 			.filter(user => user.login.includes(login))
 			.sort((a, b) => a.login.localeCompare(b.login));
 	}
 
-	saveUser(user: User): User {
+	isLoginUsed(login: string): boolean {
+		const ids = this.getIds();
+		return ids.some(id => this.store[id].login === login);
+	}
+
+	saveUser(user: User): User | false {
+		if(this.isLoginUsed(user.login)) {
+			return false;
+		}
 		user.id = this.getNextId();
 		user.isDeleted = false;
 		this.store[user.id] = user;
@@ -82,7 +109,7 @@ export class Store {
 	}
 
 	deleteUser(id: string): User | false {
-		const user = this.getUser(id);
+		const user = this.getUserById(id);
 		if (user && !user.isDeleted) {
 			user.isDeleted = true;
 			return user;
@@ -91,7 +118,7 @@ export class Store {
 	}
 
 	updateUser(newUserData: User): User | false {
-		const user = this.getUser(newUserData.id);
+		const user = this.getUserById(newUserData.id);
 		if (user) {
 			this.store[newUserData.id] = newUserData;
 			return this.store[newUserData.id];

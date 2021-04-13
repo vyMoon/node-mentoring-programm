@@ -31,14 +31,13 @@ export class User {
         if (users.length < Number(query.limit)) {
             res.status(200).json({
                 message: 'ok',
-                lenght: users.length,
+                count: users.length,
                 users
             });
         } else {
             res.status(200).json({
                 message: 'ok',
-                available: users.length,
-                lenght: query.limit,
+                count: users.length,
                 users: users.slice(0, Number(query.limit))
             });
         }
@@ -59,7 +58,7 @@ export class User {
         if (user) {
             res.status(200).json({ response: 'ok', user });
         } else {
-            res.status(400).json(
+            res.status(404).json(
                 { error: `there is no user with id: ${userId}` }
             );
         }
@@ -73,8 +72,8 @@ export class User {
                 newUserData: user
             });
         } else {
-            res.status(500).json(
-                { error: 'somthing went wrong' }
+            res.status(400).json(
+                { error: `login: ${req.body.login} is taken` }
             );
         }
     }
