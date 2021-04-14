@@ -146,8 +146,4 @@ export class Store {
 	}
 }
 
-const store = new Store();
-
-export function getStore(): Store {
-  return store;
-}
+export const store = new Store();

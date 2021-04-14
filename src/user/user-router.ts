@@ -1,11 +1,8 @@
 import express from 'express';
-import { User } from './user';
-import { Store } from '../store/store';
+import { user } from './user';
 import { validateSchema } from '../validation/validation';
 import { putSchema } from './validation';
 import { createSchema } from './validation';
-
-const user = new User(new Store);
 
 export const userRouter = express.Router();
 
