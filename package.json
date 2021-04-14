@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "create-users-table": "nodemon --exec ts-node src/models/users/create-table.ts",
+    "create-users-table": "ts-node src/models/users/create-table.ts",
     "start": "nodemon --exec ts-node src/app.ts",
     "lint": "eslint . --ext .ts --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -25,6 +25,8 @@
     "express-joi-validation": "^5.0.0",
     "joi": "^17.4.0",
     "joi-extract-type": "^15.0.8",
-    "pg": "^8.6.0"
+    "pg": "^8.6.0",
+    "pg-hstore": "^2.3.3",
+    "sequelize": "^6.6.2"
   }
 }
