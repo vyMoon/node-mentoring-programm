@@ -23,31 +23,33 @@ class User {
   }
 
   private getAutoSuggestUsers(req: Request, res: Response): void {
-        const query = (req.query as unknown) as AutoSuggest;
+    const query = (req.query as unknown) as AutoSuggest;
 
-        if (!query.limit) {
-            query.limit = '5';
-        }
+    if (!query.limit) {
+      query.limit = '5';
+    }
 
-        if (isNaN(Number(query.limit)) || !query.login) {
-            res.status(400).json({ error: 'Bad request' });
-            return;
-        }
-
-        const users = this.storeService.getActiveUsersBylogin(query.login);
-        if (users.length < Number(query.limit)) {
-            res.status(200).json({
-                message: 'ok',
-                count: users.length,
-                users
-            });
-        } else {
-            res.status(200).json({
-                message: 'ok',
-                count: users.length,
-                users: users.slice(0, Number(query.limit))
-            });
-        }
+    if (isNaN(Number(query.limit)) || !query.login) {
+      res.status(400).json({ error: 'Bad request' });
+      return;
+    }
+    console.log(query)
+    
+    this.userService.getActiveUSersByLoginString(
+      query.login,
+      query.limit
+    )
+    .then(response => {
+      res.status(200).json({
+        count: response.length > query.limit ? query.limit : response.length,
+        users: response
+      })
+    })
+    .catch(err => {
+      res.status(500).json({
+        error: err.message
+      })
+    });
   }
 
   private getAllActiveUsers(req: Request, res: Response): void {
@@ -65,64 +67,121 @@ class User {
   }
 
   getUser(req: Request, res: Response): void {
-        const { id: userId } = req.params;
-        const user = this.storeService.getUser(userId);
+    const { id } = req.params;
+    const userId = parseInt(id);
+    if(isNaN(userId)) {
+      this.badReques(req, res);
+      return;
+    }
+    this.userService.getUserById(userId)
+      .then(user => {
         if (user) {
-            res.status(200).json({ response: 'ok', user });
+          res.status(200).json({ user });
         } else {
-            res.status(404).json(
-                { error: `there is no user with id: ${userId}` }
-            );
+          res.status(404).json(
+            { error: `there is no user with id: ${userId}` }
+          );
         }
+      })
+      .catch(err => console.log(err));
   }
 
   post(req: Request, res: Response): void {
-        const user = this.storeService.saveUser(req.body);
-        if (user) {
+    this.userService.getUserByLogin(
+      req.body.login
+    ).then(response => {
+      if(response.length !== 0 ) {
+        res.status(400).json({
+          error: `user with login: ${req.body.login} exists` 
+        })
+      } else {
+        this.userService.getNexId().then(id => {
+          const newUser = req.body;
+          newUser.id = id;
+          newUser.is_deleted = false;
+          this.userService.createUser(newUser)
+          .then(response => {
             res.status(200).json({
-                message: 'ok',
-                newUserData: user
-            });
-        } else {
-            res.status(400).json(
-                { error: `login: ${req.body.login} is taken` }
-            );
-        }
+              message: 'user created',
+              user: response
+            })
+          })
+        })
+      }
+    }).catch(err => {
+      res.status(500).json(
+        { error: err.mesage }
+      );
+    });
   }
 
   put(req: Request, res: Response): void {
-        const user = this.storeService.updateUser(req.body);
-        
-        if (user) {
-            res.status(200).json({
-                message: `user id ${user.id} updated!`,
-                newUserData: user
-            });
-            return;
-        }
-        res.status(400).json(
-            { error: 'there is no such a user' }
+    const { id } = req.params;
+    const userId = parseInt(id);
+    if(isNaN(userId)) {
+      const message = `id: '${id}' doesn't look like id`
+      this.badReques(req, res, message);
+      return;
+    }
+
+    this.userService.getUserById(userId)
+    .then(user => {
+      if(!user) {
+        res.status(404).json(
+          { error: `there is no user with id: ${userId}` }
         );
-        
+      } else {
+        this.userService.updateUser(userId, req.body)
+        .then(() => {
+          res.status(200).json({
+            message: `user id: ${userId} has been successfully updated`,
+            user: {
+              id: userId,
+              ...req.body
+            }
+          })
+        })
+      }
+    })
+    .catch(err => {
+      res.status(500).json({
+        error: err.mesage
+      })
+    })
   }
 
   delete(req: Request, res: Response): void {
-        const { id: userId } = req.params;
-        const user = this.storeService.deleteUser(userId);
-        if (user && user.isDeleted) {
-            res.status(200).json(
-                { message: `user id ${userId} has been deleted` }
-            );
+    const { id } = req.params;
+    const userId = parseInt(id);
+    if(isNaN(userId)) {
+      const message = `id: '${id}' doesn't look like id`
+      this.badReques(req, res, message);
+      return;
+    }
+
+    this.userService.deleteUserByIdSoft(userId)
+      .then(response => {
+        if (response[0]) {
+          res.status(200).json({
+            message: `user id: ${userId} has been deleted successfully`
+          })
         } else {
-            res.status(400).json(
-                { error: `there is no user with id: ${userId}` }
-            );
+          res.status(404).json({
+            error: `user id: ${userId} not found`
+          })
         }
+      })
+      .catch(err => {
+        res.status(500).json({
+          error: err.message
+        })
+      });
   }
 
-  badReques(req: Request, res: Response): void {
+  badReques(req: Request, res: Response, message?: string): void {
+    const error = `bad request. ${message}`
     res.status(400).json(
-      { error: 'bad request' }
+      { error }
     );
   }
 }
