@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "create-users-table": "ts-node src/models/users/create-table.ts",
+    "create-groups-table": "ts-node src/models/groups/create-groups-table.ts",
     "start": "nodemon --exec ts-node src/app.ts",
     "lint": "eslint . --ext .ts --fix",
     "test": "echo \"Error: no test specified\" && exit 1"

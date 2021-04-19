@@ -1,6 +1,5 @@
 import { Users } from '../../models/users/users.model';
 import { Op } from 'sequelize';
-// import { response } from 'express';
 
 class UserService {
   private readonly usersModel;
@@ -13,11 +12,12 @@ class UserService {
     return this.usersModel.create(
       userInformation
     )
-    .then(response => this.getUserData(response))
+    .then(response => this.mapperUerInformation(response))
   }
   
   getAllActiveUsers() {
     return  this.usersModel.findAll({
+      order: [ [ 'id', 'ASC' ]],
       attributes: [
         'id', 'login', 'password', 'age'
       ],
@@ -25,7 +25,7 @@ class UserService {
         is_deleted: false,
       }
   })
-  .then(res => res.map(this.getUserData))
+  .then(res => res.map(this.mapperUerInformation))
   }
 
   getUserById(id) {
@@ -39,7 +39,7 @@ class UserService {
         id: id,
       }
     })
-    .then(res => res.map(this.getUserData))
+    .then(res => res.map(this.mapperUerInformation))
     .then(res => res[0])
   }
 
@@ -62,7 +62,7 @@ class UserService {
         }
       }
     })
-    .then(res => res.map(this.getUserData))
+    .then(res => res.map(this.mapperUerInformation))
   }
 
   getNexId() {
@@ -103,7 +103,7 @@ class UserService {
     )
   }
 
-  private getUserData(user) {
+  private mapperUerInformation(user) {
     return {
       id: user.getDataValue('id'),
       login: user.getDataValue('login'),
