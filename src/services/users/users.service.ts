@@ -1,5 +1,5 @@
 import { Users } from '../../models/users/users.model';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 
 class UserService {
   private readonly usersModel;
@@ -8,15 +8,15 @@ class UserService {
     this.usersModel = usersModel;
   }
 
-  createUser(userInformation) {
-    return this.usersModel.create(
+  async createUser(userInformation) {
+    const response = await this.usersModel.create(
       userInformation
     )
-    .then(response => this.mapperUerInformation(response))
+    return this.mapperUerInformation(response);
   }
-  
-  getAllActiveUsers() {
-    return  this.usersModel.findAll({
+
+  async getAllActiveUsers() {
+    const users = await this.usersModel.findAll({
       order: [ [ 'id', 'ASC' ]],
       attributes: [
         'id', 'login', 'password', 'age'
@@ -24,12 +24,20 @@ class UserService {
       where: {
         is_deleted: false,
       }
-  })
-  .then(res => res.map(this.mapperUerInformation))
+    });
+    return users.map(user => this.mapperUerInformation(user));
   }
 
-  getUserById(id) {
-    return this.usersModel.findAll({
+  praseGroupId(id: string): number | false {
+    const userId = parseInt(id);
+    if(isNaN(userId)) {
+      return false;
+    }
+    return userId;
+  }
+
+  async getUserById(id) {
+    const usersArray = await this.usersModel.findAll({
       limit: 1,
       attributes: [
         'id', 'login', 'password', 'age'
@@ -39,8 +47,7 @@ class UserService {
         id: id,
       }
     })
-    .then(res => res.map(this.mapperUerInformation))
-    .then(res => res[0])
+    return usersArray[0];
   }
 
   getUserByLogin(login) {
@@ -51,8 +58,27 @@ class UserService {
     })
   }
 
-  getActiveUSersByLoginString(string, limit) {
-    return this.usersModel.findAll({
+  async isLoginFree(login: string) {
+    const users = await this.getUserByLogin(login);
+    return users.length === 0; 
+  }
+
+  async canUserBeUpdated(login, id) {
+    const response = await this.usersModel.findAll({
+      attributes: [ 'id', 'login', 'password', 'age' ],
+      limit: 1,
+      where: {
+        login: login,
+        id: {
+          [Op.not]: id
+        }
+      }
+    })
+    return response.length === 0;
+  }
+
+  async getActiveUSersByLoginString(string, limit) {
+    const users = await this.usersModel.findAll({
       limit: limit,
       attributes: [ 'id', 'login', 'password', 'age' ],
       where: {
@@ -61,49 +87,58 @@ class UserService {
           [Op.like]: `%${string}%`,
         }
       }
-    })
-    .then(res => res.map(this.mapperUerInformation))
+    });
+    
+    return users.map(this.mapperUerInformation);
   }
 
-  getNexId() {
-    return this.usersModel.findOne({
-      attributes: [ 'id', 'login', 'password', 'age' ],
-      order: [ [ 'id', 'DESC' ]],
-    }).then(response => {
-      const id = response.getDataValue('id');
-      return id + 1;
-    })
-  }
-
-  updateUser(id, newUserInformation) {
-    return this.usersModel.update(
-      {
-        login: newUserInformation.login,
-        age: newUserInformation.age,
-        password: newUserInformation.password
-      },
-      {
-        where: {
-          id: id,
-      }
-    })
-  }
-
-  deleteUserByIdSoft(id) {
-    return this.usersModel.update(
-      {
-        is_deleted: true
-      },
-      {
-        where: {
-          id: id,
-          is_deleted: false,
+  async getAutoSuggestCount(string) {
+    const fieldName = 'total_autosuggest';
+    const response = await this.usersModel.findAll({
+      attributes: [
+        [Sequelize.fn('COUNT', Sequelize.col('login')), fieldName]
+      ],
+      where: {
+        is_deleted: false,
+        login: {
+          [Op.like]: `%${string}%`,
         }
       }
-    )
+    });
+    return response[0].getDataValue(fieldName)
   }
 
-  private mapperUerInformation(user) {
+  async getNexId() {
+    const lastUser = await this.usersModel.findOne({
+      attributes: [ 'id', 'login', 'password', 'age' ],
+      order: [ [ 'id', 'DESC' ]],
+    });
+
+    return lastUser.getDataValue('id') + 1;
+  }
+
+  async getNextUSerInformation(user) {
+    user.is_deleted = false;
+    user.id = await this.getNexId();
+    return user;
+  }
+
+  async updateUser(userInstance, newInformation) {
+    userInstance.login = newInformation.login;
+    userInstance.age = newInformation.age;
+    userInstance.password = newInformation.password;
+    const response = await userInstance.save();
+
+    return this.mapperUerInformation(response)
+  }
+
+  async deleteUser(userInstance) {
+    userInstance.is_deleted = true;
+    const user = await userInstance.save();
+    return this.mapperUerInformation(user);
+  }
+
+  mapperUerInformation(user) {
     return {
       id: user.getDataValue('id'),
       login: user.getDataValue('login'),
