@@ -1,6 +1,6 @@
 import express from 'express';
 import { Request, Response } from 'express';
-import { userRouter } from './user/user-router';
+import { userRouter } from './routers/users/users-router';
 import { groupsRouter } from './routers/groups/group-router';
 
 const app = express();

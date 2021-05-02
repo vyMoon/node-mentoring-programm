@@ -1,15 +1,12 @@
 import { Request, Response } from 'express';
-import { store } from '../store/store';
-import { AutoSuggest } from './types/autosuggest.interface';
-import { usersService } from '../services/users/users.service';
+import { AutoSuggest } from '../../types/users/autosuggest.interface';
+import { usersService } from '../../services/users/users.service';
 
 
 class User {
-  private readonly storeService;
   private readonly userService;
 
-  constructor(storeServoce, userService) {
-    this.storeService = storeServoce;
+  constructor(userService) {
     this.userService = userService;
   }
 
@@ -186,4 +183,4 @@ class User {
   }
 }
 
-export const user = new User(store, usersService);
+export const user = new User(usersService);
