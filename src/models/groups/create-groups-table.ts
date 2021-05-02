@@ -1,8 +1,4 @@
-import { sequelize } from '../db-connection';
-// import { Users } from './users.model';
 import { Groups } from './groups.model';
-
-console.log('script here');
 
 Groups.sync({ force: true })
   .then(() => {

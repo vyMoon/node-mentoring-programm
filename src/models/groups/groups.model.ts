@@ -1,6 +1,8 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../db-connection';
 
+// созрангить отдельно энам
+
 export const Groups = sequelize.define('groups', {
   id: {
     type: DataTypes.INTEGER,

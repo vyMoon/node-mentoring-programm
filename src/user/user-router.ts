@@ -11,4 +11,4 @@ userRouter.get('/:id', user.getUser.bind(user));
 userRouter.post('/', validateSchema(createSchema), user.post.bind(user));
 userRouter.put('/:id', validateSchema(putSchema), user.put.bind(user));
 userRouter.delete('/:id', user.delete.bind(user));
-userRouter.delete('/', user.badReques.bind(user));
+// userRouter.delete('/', user.badReques.bind(user));
