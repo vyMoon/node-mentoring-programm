@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { groupsService } from '../../services/groups/groups-service';
+import { ApplicationError } from '../../error/application-error';
 
 interface RequesWithSelectedGroup extends Request {
   selectedGroup: any;
@@ -13,6 +14,7 @@ class GroupsController {
   }
 
   get(req: Request, res: Response): void {
+    // throw new ApplicationError(400, 'error message', 'method name')
     this.groupsService.getAll()
     .then(response => {
       res.status(200).json({
@@ -61,17 +63,19 @@ class GroupsController {
     next();
   }
 
-  async deleteGroupById(req: RequesWithSelectedGroup, res: Response) {
-    if (!req.selectedGroup) {
-      res.status(404).json({
-        error: `there is no group with id ${req.params.id}`
-      });
-      return;
-    }
-    await req.selectedGroup.destroy();
-    res.status(200).json({
-      message: `group id: ${req.params.id} has been deleted`
-    });
+  async deleteGroupById(req: RequesWithSelectedGroup, res: Response, next) {
+    // if (!req.selectedGroup) {
+    //   res.status(404).json({
+    //     error: `there is no group with id ${req.params.id}`
+    //   });
+    //   return;
+    // }
+    // await req.selectedGroup.destroy();
+    // res.status(200).json({
+    //   message: `group id: ${req.params.id} has been deleted`
+    // });
+
+    next(new ApplicationError(501, 'mesage', 'method'))
   }
 
   async updateById(req: RequesWithSelectedGroup, res) {

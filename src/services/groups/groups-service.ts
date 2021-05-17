@@ -1,5 +1,6 @@
 import { Groups } from '../../models/groups/groups.model';
 import { Op } from 'sequelize';
+import { ApplicationError } from '../../error/application-error';
 
 class GroupsService {
   private readonly groups;
@@ -27,7 +28,7 @@ class GroupsService {
       where: {
         id: id,
       }
-    })
+    });
     return groupsArray[0];
   }
 
