@@ -9,14 +9,15 @@ class GroupsService {
     this.groups = groupsModel;
   }
 
-  getAll() {
-    return this.groups.findAll({
+  async getAll() {
+    const groups = await this.groups.findAll({
       attributes: [
         'id', 'name', 'permissions'
       ],
       order: [['id', 'ASC']],
-    })
-    .then(groups => groups.map(this.mapGroupInfomation))
+    });
+
+    return groups.map(this.mapGroupInfomation);
   }
 
   async getGroupById(id) {
@@ -29,41 +30,50 @@ class GroupsService {
         id: id,
       }
     });
+
+    if (groupsArray.length === 0) {
+      throw new ApplicationError(404, `there is no group with id ${id}`);
+    }
     return groupsArray[0];
   }
 
-  getGroupbyName(name: string) {
-    return this.groups.findAll({
-      attributes: [
-        'id', 'name', 'permissions'
-      ],
-      limit: 1,
-      where: {
-        name: name,
-      }
-    })
-  }
+  // getGroupbyName(name: string) {
+  //   return this.groups.findAll({
+  //     attributes: [
+  //       'id', 'name', 'permissions'
+  //     ],
+  //     limit: 1,
+  //     where: {
+  //       name: name,
+  //     }
+  //   })
+  // }
 
   async changeGroup(groupInstance, newGroupInformation) {
     groupInstance.name = newGroupInformation.name;
     groupInstance.permissions = newGroupInformation.permissions;
-    const response = await groupInstance.save();
-    return this.mapGroupInfomation(response)
+    const savedGroup = await groupInstance.save();
+    return this.mapGroupInfomation(savedGroup);
   }
 
-  async isNameFree(name: string, id: string) {
+  async isNameFree(name: string, id?: string) {
+    const whereOptions: any = {};
+    whereOptions.name = name;
+    if(id) {
+      whereOptions.id = {
+        [Op.not]: id
+      }
+    }
     const response = await this.groups.findAll({
       attributes: [
         'id', 'name', 'permissions'
       ],
       limit: 1,
-      where: {
-        name: name,
-        id: {
-          [Op.not]: id
-        }
-      }
-    })
+      where: whereOptions,
+    });
+    if (response.length !== 0) {
+      throw new ApplicationError(409, `name: '${name}' is taken`);
+    }
     return response.length === 0;
   }
 
@@ -90,7 +100,7 @@ class GroupsService {
   praseGroupId(id: string): number | false {
     const groupId = parseInt(id);
     if(isNaN(groupId)) {
-      return false;
+      throw new ApplicationError(400, `id: ${id}, is not correct`);
     }
     return groupId;
   }

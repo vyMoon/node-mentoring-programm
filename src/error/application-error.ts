@@ -1,12 +1,12 @@
 export class ApplicationError extends Error {
-  statusCode?: number;
-  methodName?: string;
+  statusCode: number;
+  methodName: string;
   errorMessage?: string;
   
   constructor(
     statusCode: number,
     message: string,
-    methodName: string
+    methodName?: string
   ) {
     super();
     this.statusCode = statusCode;

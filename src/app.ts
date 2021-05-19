@@ -16,9 +16,7 @@ app.use(methodsLogger);
 app.use('/users', userRouter);
 app.use('/groups', groupsRouter);
 app.use('/', (req, res) => {
-    res.status(400).json({
-        error: 'Bad request'
-    })
+    throw new ApplicationError(400, 'Bad Request');
 });
 app.use(errorHandler);
 
