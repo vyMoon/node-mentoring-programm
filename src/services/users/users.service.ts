@@ -1,5 +1,6 @@
 import { Users } from '../../models/users/users.model';
 import { Op, Sequelize } from 'sequelize';
+import { ApplicationError } from '../../error/application-error';
 
 class UserService {
   private readonly usersModel;
@@ -28,10 +29,11 @@ class UserService {
     return users.map(user => this.mapperUerInformation(user));
   }
 
-  praseGroupId(id: string): number | false {
+  praseUserId(id: string): number | false {
     const userId = parseInt(id);
     if(isNaN(userId)) {
-      return false;
+      // return false;
+      throw new ApplicationError(400, `id: ${id} isn't correct`);
     }
     return userId;
   }
@@ -60,6 +62,9 @@ class UserService {
 
   async isLoginFree(login: string) {
     const users = await this.getUserByLogin(login);
+    if (users.length !==0) {
+      throw new ApplicationError(409, `login: ${login} is taken`);
+    }
     return users.length === 0; 
   }
 
@@ -127,14 +132,19 @@ class UserService {
     userInstance.login = newInformation.login;
     userInstance.age = newInformation.age;
     userInstance.password = newInformation.password;
-    const response = await userInstance.save();
-
-    return this.mapperUerInformation(response)
+    const updatedUSerInformation = await userInstance.save();
+    if (!updatedUSerInformation) {
+      throw new Error('user can not be updated')
+    }
+    return this.mapperUerInformation(updatedUSerInformation)
   }
 
   async deleteUser(userInstance) {
     userInstance.is_deleted = true;
     const user = await userInstance.save();
+    if (!user) {
+      throw new Error('user can not be deleted');
+    }
     return this.mapperUerInformation(user);
   }
 
