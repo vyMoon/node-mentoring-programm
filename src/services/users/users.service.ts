@@ -148,6 +148,25 @@ class UserService {
     return this.mapperUerInformation(user);
   }
 
+  async getUserIdByCreadentials(login: string, password: string) {
+    const userId = await this.usersModel.findOne({
+      attributes: [ 'id'],
+      where: {
+        login,
+        password,
+      }
+    });
+
+    if (!userId) {
+      throw new ApplicationError(
+        403,
+        'credential are not correct'
+      );
+    }
+
+    return userId.getDataValue('id');
+  }
+
   mapperUerInformation(user) {
     return {
       id: user.getDataValue('id'),

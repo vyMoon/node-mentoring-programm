@@ -50,7 +50,7 @@ class GroupsController {
     try {
       const groupId = this.groupsService.praseGroupId(id);
       req.selectedGroup = await this.groupsService.getGroupById(groupId);
-
+      // throw new Error('error message')
     } catch(err) {
       next(err);
     }

@@ -7,14 +7,16 @@ import { uncaughtExceptionLogger } from './logger/uncaught-exception-logger';
 import { unhandledRejectionLogger } from './logger/unhandled-rejection-logger';
 import { ApplicationError } from './error/application-error';
 import { errorHandler } from './error/error-handler';
+import { login, authGuard } from './authorisation/login';
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
 app.use(methodsLogger);
-app.use('/users', userRouter);
-app.use('/groups', groupsRouter);
+app.post('/login', login);
+app.use('/users', authGuard, userRouter);
+app.use('/groups', authGuard, groupsRouter);
 app.use('/', (req, res) => {
     throw new ApplicationError(400, 'Bad Request');
 });

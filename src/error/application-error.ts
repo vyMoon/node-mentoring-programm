@@ -1,7 +1,7 @@
 export class ApplicationError extends Error {
   statusCode: number;
   methodName: string;
-  errorMessage?: string;
+  errorMessage: string;
   
   constructor(
     statusCode: number,
