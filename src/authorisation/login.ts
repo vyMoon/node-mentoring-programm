@@ -46,7 +46,6 @@ export function authGuard(req, res, next) {
     console.log(isCredetialsCorrect);
     next();
   } catch(err) {
-    console.log(err.message, '<< an')
     if (err.message === 'jwt expired') {
       next(new ApplicationError(
         403,
