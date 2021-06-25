@@ -14,7 +14,6 @@ class GroupsController {
   }
 
   async get(req: Request, res: Response, next) {
-    throw new Error('error')
     try {
       const groups = await this.groupsService.getAll();
       res.status(200).json({
