@@ -14,6 +14,7 @@ class GroupsController {
   }
 
   async get(req: Request, res: Response, next) {
+    throw new Error('error')
     try {
       const groups = await this.groupsService.getAll();
       res.status(200).json({
@@ -50,7 +51,6 @@ class GroupsController {
     try {
       const groupId = this.groupsService.praseGroupId(id);
       req.selectedGroup = await this.groupsService.getGroupById(groupId);
-      // throw new Error('error message')
     } catch(err) {
       next(err);
     }
@@ -96,7 +96,6 @@ class GroupsController {
 
   async createGroup(req: Request, res: Response, next) {
     const {body} = req;
-    console.log('controller create group')
 
     try {
       await this.groupsService.isNameFree(body.name);

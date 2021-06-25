@@ -40,23 +40,27 @@ export function authGuard(req, res, next) {
   
   try {
     if (!token) {
-      throw new ApplicationError(401, 'Unauthorized')
+      throw new ApplicationError(
+        403,
+        'forbidden'
+      );
     }
     const isCredetialsCorrect = jwt.verify(token, secret);
-    console.log(isCredetialsCorrect);
     next();
   } catch(err) {
     if (err.message === 'jwt expired') {
       next(new ApplicationError(
-        403,
-        'forbidden'
-      ));
-    }
-    if (err.message === 'invalid signature') {
-      next(new ApplicationError(
         401,
         'Unauthorized'
       ));
+      return;
+    }
+    if (err.message === 'invalid signature' || err.message === 'invalid token') {
+      next(new ApplicationError(
+        403,
+        'forbidden'
+      ));
+      return;
     }
     next(err);
   }

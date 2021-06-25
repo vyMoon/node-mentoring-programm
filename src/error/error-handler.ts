@@ -8,7 +8,7 @@ export const errorHandler = (err, req, res, next) => {
       });
       return;
   }
-  logger.error(`${err.message}, stack: ${err.stack}`)
+  logger.error(`${err.message}, stack: ${err.stack}`, new Date)
   res.status(500).json({
       error: 'Internal Server Error'
   })

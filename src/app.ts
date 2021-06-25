@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(methodsLogger);
 app.post('/login', login);
 app.use('/users', authGuard, userRouter);
-app.use('/groups', authGuard, groupsRouter);
+app.use('/groups', groupsRouter);
 app.use('/', (req, res) => {
     throw new ApplicationError(400, 'Bad Request');
 });
