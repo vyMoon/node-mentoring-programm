@@ -1,8 +1,8 @@
-import { logger } from './logger';
+import { logger, getTime } from './logger';
 
 export const methodsLogger = (req, res, next) => {
   const { method, url, body, query } = req;
-  const time = new Date;
+  const time = getTime();
   const log = JSON.stringify({
     time,
     method,

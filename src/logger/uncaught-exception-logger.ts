@@ -1,7 +1,7 @@
-import { logger } from './logger';
+import { logger, getTime } from './logger';
 
 export const uncaughtExceptionLogger = (err) => {
-  const time = new Date;
+  const time = getTime;
   const log = JSON.stringify({
       time,
       message: 'uncaughtException',

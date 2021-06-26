@@ -1,5 +1,5 @@
 import { ApplicationError } from './application-error';
-import { logger } from '../logger/logger';
+import { logger, getTime } from '../logger/logger';
 
 export const errorHandler = (err, req, res, next) => {
   if (err.constructor === ApplicationError) {
@@ -8,7 +8,7 @@ export const errorHandler = (err, req, res, next) => {
       });
       return;
   }
-  logger.error(`${new Date} ${err.message}, stack: ${err.stack}`)
+  logger.error(`${getTime()} ${err.message}, stack: ${err.stack}`)
   res.status(500).json({
       error: 'Internal Server Error'
   })

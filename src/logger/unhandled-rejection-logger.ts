@@ -1,7 +1,7 @@
-import { logger } from './logger';
+import { logger, getTime } from './logger';
 
 export const unhandledRejectionLogger = (reason, promise) => {
-  const time = new Date;
+  const time = getTime();
   const log = JSON.stringify({
     time,
     message: 'unhandledRejection',

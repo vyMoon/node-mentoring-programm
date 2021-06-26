@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction, RequestHandler  } from 'express';
+import { ApplicationError } from '../error/application-error';
 
 export function validateSchema(schema): RequestHandler {
   return (req: Request, res: Response, next: NextFunction): void => {
@@ -10,7 +11,7 @@ export function validateSchema(schema): RequestHandler {
       res.status(400).json({
         error: 'Bad Request',
         message: errorResponse(error.details)
-      })
+      });
       return;
     }
     next();

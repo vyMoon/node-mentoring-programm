@@ -9,4 +9,10 @@ export const logger = winston.createLogger({
       )
     }),
   ],
-})
+});
+
+export function getTime(): string {
+  const now = new Date;
+  return `${now.getFullYear()}-${now.getMonth()}-${now.getDate()} 
+    ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}:${now.getMilliseconds()}}`
+}
