@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { AutoSuggest } from '../../types/users/autosuggest.interface';
 import { usersService } from '../../services/users/users.service';
 import { ApplicationError } from '../../error/application-error';
@@ -14,7 +14,7 @@ class UsersController {
     this.userService = userService;
   }
 
-  get(req: Request, res: Response, next): void {
+  get = (req: Request, res: Response, next: NextFunction): void => {
     const { query } = req;
     if (query.login) {
       this.getAutoSuggestUsers(req, res, next);
@@ -23,7 +23,7 @@ class UsersController {
     }
   }
 
-  private async getAutoSuggestUsers(req: Request, res: Response, next) {
+  private async getAutoSuggestUsers(req: Request, res: Response, next: NextFunction) {
     const query = (req.query as unknown) as AutoSuggest;
     if (!query.limit) {
       query.limit = '5';
@@ -49,7 +49,7 @@ class UsersController {
     }
   }
 
-  private async getAllActiveUsers(req: Request, res: Response, next) {
+  private async getAllActiveUsers(req: Request, res: Response, next: NextFunction) {
     try {
       const users = await this.userService.getAllActiveUsers();
       res.status(200).json({
@@ -61,7 +61,12 @@ class UsersController {
     }
   }
 
-  async getUserById(req: RequestWithSelectedUser, res: Response, next, id: string) {
+  getUserById = async (
+    req: RequestWithSelectedUser,
+    res: Response,
+    next: NextFunction,
+    id: string
+  ): Promise<void> => {
     try {
       const userId = this.userService.praseUserId(id);
       const user = await this.userService.getUserById(userId);
@@ -72,7 +77,7 @@ class UsersController {
     next();
   }
 
-  getUser(req: RequestWithSelectedUser, res: Response, next): void {
+  getUser = (req: RequestWithSelectedUser, res: Response, next: NextFunction): void => {
     const { id } = req.params;
     const { selectedUser } = req;
 
@@ -88,11 +93,10 @@ class UsersController {
     }
   }
 
-  async post(req: Request, res: Response, next) {
-    const { body } = req;
-
+  post = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const isLoginFree = await this.userService.isLoginFree(body.login);
+      const { body } = req;
+      await this.userService.isLoginFree(body.login);
 
       const nextUser = await this.userService.getNextUSerInformation(body);
       const savedInformation = await this.userService.createUser(nextUser);
@@ -107,7 +111,7 @@ class UsersController {
     
   }
 
-  async put(req: RequestWithSelectedUser, res: Response, next) {
+  put = async (req: RequestWithSelectedUser, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params;
     const { body } = req;
     const { selectedUser } = req;
@@ -128,7 +132,7 @@ class UsersController {
     }
   }
 
-  async delete(req: RequestWithSelectedUser, res: Response, next) {
+  delete = async (req: RequestWithSelectedUser, res: Response, next: NextFunction): Promise<void> => {
     const { selectedUser } = req;
     const { id } = req.params;
 

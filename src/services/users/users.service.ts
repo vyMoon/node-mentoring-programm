@@ -93,7 +93,6 @@ class UserService {
         }
       }
     });
-    
     return users.map(this.mapperUerInformation);
   }
 

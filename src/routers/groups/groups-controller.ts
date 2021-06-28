@@ -1,6 +1,5 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { groupsService } from '../../services/groups/groups-service';
-import { ApplicationError } from '../../error/application-error';
 
 export interface RequesWithSelectedGroup extends Request {
   selectedGroup: any;
@@ -13,7 +12,7 @@ export class GroupsController {
     this.groupsService = groupsService;
   }
 
-  get = async (req: Request, res: Response, next) => {
+  get = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const groups = await this.groupsService.getAll();
       res.status(200).json({
@@ -25,7 +24,7 @@ export class GroupsController {
     }
   }
 
-  getGroupById = async (req: Request, res: Response, next) => {
+  getGroupById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { params } = req;
       const groupId = this.groupsService.praseGroupId(params.id);
@@ -42,9 +41,9 @@ export class GroupsController {
   getGroupByIdMidleWare = async (
     req: RequesWithSelectedGroup,
     res: Response,
-    next,
+    next: NextFunction,
     id: string
-  ) => {
+  ): Promise<void> => {
     try {
       const groupId = this.groupsService.praseGroupId(id);
       req.selectedGroup = await this.groupsService.getGroupById(groupId);
@@ -54,7 +53,7 @@ export class GroupsController {
     next();
   }
 
-  async deleteGroupById(req: Request, res: Response, next) {
+  deleteGroupById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { params } = req;
 
@@ -68,7 +67,7 @@ export class GroupsController {
     }
   }
 
-  updateById = async (req: Request, res: Response, next) => {
+  updateById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { params, body } = req;
       await this.groupsService.isNameFree(body.name, params.id);
@@ -85,7 +84,7 @@ export class GroupsController {
     }
   }
 
-  createGroup = async (req: Request, res: Response, next) => {
+  createGroup = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const {body} = req;
     try {
       await this.groupsService.isNameFree(body.name);

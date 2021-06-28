@@ -90,7 +90,7 @@ export class GroupsService {
     );
   }
 
-  async getNexId() {
+  async getNexId(): Promise<number> {
     const response = await this.groups.findOne({
       attributes: [ 'id' ],
       order: [ [ 'id', 'DESC' ]],
@@ -102,7 +102,7 @@ export class GroupsService {
     return id;
   }
 
-  async deleteGroupById(groupId) {
+  async deleteGroupById(groupId: string): Promise<boolean> {
     const id = this.praseGroupId(groupId);
     const groupsArray = await this.groups.findAll({
       attrigutes: [
