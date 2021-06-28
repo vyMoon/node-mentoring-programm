@@ -2,18 +2,18 @@ import { Request, Response } from 'express';
 import { groupsService } from '../../services/groups/groups-service';
 import { ApplicationError } from '../../error/application-error';
 
-interface RequesWithSelectedGroup extends Request {
+export interface RequesWithSelectedGroup extends Request {
   selectedGroup: any;
 }
 
-class GroupsController {
+export class GroupsController {
   private readonly groupsService;
 
   constructor(groupsService) {
     this.groupsService = groupsService;
   }
 
-  async get(req: Request, res: Response, next) {
+  get = async (req: Request, res: Response, next) => {
     try {
       const groups = await this.groupsService.getAll();
       res.status(200).json({
@@ -25,28 +25,26 @@ class GroupsController {
     }
   }
 
-  getGroupById(req: RequesWithSelectedGroup, res: Response, next) {
+  getGroupById = async (req: Request, res: Response, next) => {
     try {
-      if(!req.selectedGroup) {
-        throw new ApplicationError(
-          404,
-          `there is no group with id ${req.params.id}`
-        );
-      }
+      const { params } = req;
+      const groupId = this.groupsService.praseGroupId(params.id);
+      const group = await this.groupsService.getGroupById(groupId);
+  
       res.status(200).json({
-        group: this.groupsService.mapGroupInfomation(req.selectedGroup),
+        group: group,
       });
     } catch(err) {
       next(err);
     }
   }
 
-  async getGroupByIdMidleWare(
+  getGroupByIdMidleWare = async (
     req: RequesWithSelectedGroup,
     res: Response,
     next,
     id: string
-  ) {
+  ) => {
     try {
       const groupId = this.groupsService.praseGroupId(id);
       req.selectedGroup = await this.groupsService.getGroupById(groupId);
@@ -56,49 +54,43 @@ class GroupsController {
     next();
   }
 
-  async deleteGroupById(req: RequesWithSelectedGroup, res: Response, next) {
+  async deleteGroupById(req: Request, res: Response, next) {
     try {
-      if (!req.selectedGroup) {
-        throw new ApplicationError(
-          404,
-          `there is no group with id ${req.params.id}`
-        );
-      }
-      await req.selectedGroup.destroy();
+      const { params } = req;
+
+      await this.groupsService.deleteGroupById(params.id);
+
       res.status(200).json({
-        message: `group id: ${req.params.id} has been deleted`
+        message: `group id: ${params.id} has been deleted`
       });
     } catch(err) {
       next(err);
     }
   }
 
-  async updateById(req: RequesWithSelectedGroup, res: Response, next) {
-    const { params, body, selectedGroup } = req;
-
+  updateById = async (req: Request, res: Response, next) => {
     try {
+      const { params, body } = req;
       await this.groupsService.isNameFree(body.name, params.id);
-
-      const updatedGroup = await groupsService.changeGroup(
-        selectedGroup, body
+      const updatedGroup = await this.groupsService.changeGroup(
+        params.id, body
       );
   
       res.status(200).json({
         message: 'ok',
         group: updatedGroup,
       });
-
     } catch(err) {
       next(err);
     }
   }
 
-  async createGroup(req: Request, res: Response, next) {
+  createGroup = async (req: Request, res: Response, next) => {
     const {body} = req;
-
     try {
       await this.groupsService.isNameFree(body.name);
       const newGroup = await this.groupsService.createGroup(body);
+
       res.status(200).json({
         message: 'group has been created',
         group: newGroup

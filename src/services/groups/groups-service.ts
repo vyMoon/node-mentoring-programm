@@ -2,7 +2,7 @@ import { Groups } from '../../models/groups/groups.model';
 import { Op } from 'sequelize';
 import { ApplicationError } from '../../error/application-error';
 
-class GroupsService {
+export class GroupsService {
   private readonly groups;
 
   constructor(groupsModel) {
@@ -34,32 +34,37 @@ class GroupsService {
     if (groupsArray.length === 0) {
       throw new ApplicationError(404, `there is no group with id ${id}`);
     }
-    return groupsArray[0];
+    return this.mapGroupInfomation(groupsArray[0]);
   }
 
-  // getGroupbyName(name: string) {
-  //   return this.groups.findAll({
-  //     attributes: [
-  //       'id', 'name', 'permissions'
-  //     ],
-  //     limit: 1,
-  //     where: {
-  //       name: name,
-  //     }
-  //   })
-  // }
-
-  async changeGroup(groupInstance, newGroupInformation) {
-    groupInstance.name = newGroupInformation.name;
-    groupInstance.permissions = newGroupInformation.permissions;
-    const savedGroup = await groupInstance.save();
+  async changeGroup(groupId, newGroupInformation) {
+    console.log(groupId)
+    const id = this.praseGroupId(groupId);
+    const groupsArray = await this.groups.findAll({
+      attrigutes: [
+        'id', 'name', 'permissions'
+      ],
+      limit: 1,
+      where: {
+        id: id,
+      }
+    });
+    if (groupsArray.length === 0) {
+      throw new ApplicationError(
+        404, `there is no group with id ${groupId}`
+      )
+    }
+    const selectedGroup = groupsArray[0];
+    selectedGroup.name = newGroupInformation.name;
+    selectedGroup.permissions = newGroupInformation.permissions;
+    const savedGroup = await selectedGroup.save();
     return this.mapGroupInfomation(savedGroup);
   }
 
   async isNameFree(name: string, id?: string) {
     const whereOptions: any = {};
     whereOptions.name = name;
-    if(id) {
+    if (id) {
       whereOptions.id = {
         [Op.not]: id
       }
@@ -95,6 +100,27 @@ class GroupsService {
       ? response.getDataValue('id') + 1
       : 1 ;
     return id;
+  }
+
+  async deleteGroupById(groupId) {
+    const id = this.praseGroupId(groupId);
+    const groupsArray = await this.groups.findAll({
+      attrigutes: [
+        'id', 'name', 'permissions'
+      ],
+      limit: 1,
+      where: {
+        id: id,
+      }
+    });
+
+    if (groupsArray.length === 0) {
+      throw new ApplicationError(404, `there is no group with id ${id}`);
+    }
+
+    await groupsArray[0].destroy();
+
+    return true;
   }
 
   praseGroupId(id: string): number | false {

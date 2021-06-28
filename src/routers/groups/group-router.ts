@@ -9,25 +9,16 @@ groupsRouter.param(
   'id',
   groupsController.getGroupByIdMidleWare.bind(groupsController)
 );
-groupsRouter.get(
-  '/',
-  groupsController.get.bind(groupsController)
-);
-groupsRouter.get(
-  '/:id',
-  groupsController.getGroupById.bind(groupsController)
-);
-groupsRouter.delete(
-  '/:id',
-  groupsController.deleteGroupById.bind(groupsController)
-);
+groupsRouter.get('/', groupsController.get);
+groupsRouter.get('/:id', groupsController.getGroupById);
+groupsRouter.delete('/:id', groupsController.deleteGroupById);
 groupsRouter.put(
   '/:id',
   validateSchema(createGroupSchema),
-  groupsController.updateById.bind(groupsController)
+  groupsController.updateById
 );
 groupsRouter.post(
   '/',
   validateSchema(createGroupSchema),
-  groupsController.createGroup.bind(groupsController)
+  groupsController.createGroup
 )
