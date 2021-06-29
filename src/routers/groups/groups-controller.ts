@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { groupsService } from '../../services/groups/groups-service';
 
-export interface RequesWithSelectedGroup extends Request {
-  selectedGroup: any;
-}
-
 export class GroupsController {
   private readonly groupsService;
 
@@ -18,7 +14,7 @@ export class GroupsController {
       res.status(200).json({
         count: groups.length,
         groups: groups
-      })
+      });
     } catch(err) {
       next(err);
     }
@@ -36,21 +32,6 @@ export class GroupsController {
     } catch(err) {
       next(err);
     }
-  }
-
-  getGroupByIdMidleWare = async (
-    req: RequesWithSelectedGroup,
-    res: Response,
-    next: NextFunction,
-    id: string
-  ): Promise<void> => {
-    try {
-      const groupId = this.groupsService.praseGroupId(id);
-      req.selectedGroup = await this.groupsService.getGroupById(groupId);
-    } catch(err) {
-      next(err);
-    }
-    next();
   }
 
   deleteGroupById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

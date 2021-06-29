@@ -1,6 +1,8 @@
 import { Users } from '../../models/users/users.model';
 import { Op, Sequelize } from 'sequelize';
 import { ApplicationError } from '../../error/application-error';
+import { UserForFrontEnd } from '../../types/users/user-for-frontend.interface';
+import { User } from '../../types/users/user.interface';
 
 class UserService {
   private readonly usersModel;
@@ -29,16 +31,16 @@ class UserService {
     return users.map(user => this.mapperUerInformation(user));
   }
 
-  praseUserId(id: string): number | false {
+  praseUserId(id: string): number {
     const userId = parseInt(id);
     if(isNaN(userId)) {
-      // return false;
       throw new ApplicationError(400, `id: ${id} isn't correct`);
     }
     return userId;
   }
 
-  async getUserById(id) {
+  async getUserById(userId: string) {
+    const id = this.praseUserId(userId);
     const usersArray = await this.usersModel.findAll({
       limit: 1,
       attributes: [
@@ -48,8 +50,16 @@ class UserService {
         is_deleted: false,
         id: id,
       }
-    })
-    return usersArray[0];
+    });
+
+    if (usersArray.length === 0) {
+      throw new ApplicationError(
+        404,
+        `there is no user with id: ${id}`
+      );
+    }
+
+    return this.mapperUerInformation(usersArray[0]);
   }
 
   getUserByLogin(login) {
@@ -60,7 +70,7 @@ class UserService {
     })
   }
 
-  async isLoginFree(login: string) {
+  async isLoginFree(login: string): Promise<boolean> {
     const users = await this.getUserByLogin(login);
     if (users.length !==0) {
       throw new ApplicationError(409, `login: ${login} is taken`);
@@ -68,7 +78,7 @@ class UserService {
     return users.length === 0; 
   }
 
-  async canUserBeUpdated(login, id) {
+  async canUserBeUpdated(login, id): Promise<boolean> {
     const response = await this.usersModel.findAll({
       attributes: [ 'id', 'login', 'password', 'age' ],
       limit: 1,
@@ -82,7 +92,7 @@ class UserService {
     return response.length === 0;
   }
 
-  async getActiveUSersByLoginString(string, limit) {
+  async getActiveUSersByLoginString(string, limit): Promise<UserForFrontEnd[]> {
     const users = await this.usersModel.findAll({
       limit: limit,
       attributes: [ 'id', 'login', 'password', 'age' ],
@@ -96,7 +106,7 @@ class UserService {
     return users.map(this.mapperUerInformation);
   }
 
-  async getAutoSuggestCount(string) {
+  async getAutoSuggestCount(string): Promise<number> {
     const fieldName = 'total_autosuggest';
     const response = await this.usersModel.findAll({
       attributes: [
@@ -112,7 +122,7 @@ class UserService {
     return response[0].getDataValue(fieldName)
   }
 
-  async getNexId() {
+  async getNexId(): Promise<number> {
     const lastUser = await this.usersModel.findOne({
       attributes: [ 'id', 'login', 'password', 'age' ],
       order: [ [ 'id', 'DESC' ]],
@@ -121,13 +131,34 @@ class UserService {
     return lastUser.getDataValue('id') + 1;
   }
 
-  async getNextUSerInformation(user) {
+  async getNextUSerInformation(user): Promise<UserForFrontEnd> {
     user.is_deleted = false;
     user.id = await this.getNexId();
     return user;
   }
 
-  async updateUser(userInstance, newInformation) {
+  async updateUser(userId, newInformation): Promise<UserForFrontEnd> {
+    const id = this.praseUserId(userId);
+    const usersArray = await this.usersModel.findAll({
+      limit: 1,
+      attributes: [
+        'id', 'login', 'password', 'age'
+      ],
+      where: {
+        is_deleted: false,
+        id: id,
+      }
+    });
+
+    if (usersArray.length === 0) {
+      throw new ApplicationError(
+        404,
+        `there is no user with id: ${id}`
+      );
+    }
+
+    const userInstance = usersArray[0];
+
     userInstance.login = newInformation.login;
     userInstance.age = newInformation.age;
     userInstance.password = newInformation.password;
@@ -138,16 +169,37 @@ class UserService {
     return this.mapperUerInformation(updatedUSerInformation)
   }
 
-  async deleteUser(userInstance) {
+  async deleteUser(userId: string): Promise<UserForFrontEnd> {
+    const id = this.praseUserId(userId);
+    const usersArray = await this.usersModel.findAll({
+      limit: 1,
+      attributes: [
+        'id', 'login', 'password', 'age'
+      ],
+      where: {
+        is_deleted: false,
+        id: id,
+      }
+    });
+
+    if (usersArray.length === 0) {
+      throw new ApplicationError(
+        404,
+        `there is no user with id: ${id}`
+      );
+    }
+
+    const userInstance = usersArray[0];
     userInstance.is_deleted = true;
     const user = await userInstance.save();
     if (!user) {
       throw new Error('user can not be deleted');
     }
+
     return this.mapperUerInformation(user);
   }
 
-  async getUserIdByCreadentials(login: string, password: string) {
+  async getUserIdByCreadentials(login: string, password: string): Promise<number> {
     const userId = await this.usersModel.findOne({
       attributes: [ 'id'],
       where: {

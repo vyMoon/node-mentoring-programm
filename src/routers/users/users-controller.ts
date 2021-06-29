@@ -7,14 +7,14 @@ interface RequestWithSelectedUser extends Request {
   selectedUser?: any;
 }
 
-class UsersController {
+export class UsersController {
   private readonly userService;
 
   constructor(userService) {
     this.userService = userService;
   }
 
-  get = (req: Request, res: Response, next: NextFunction): void => {
+  get = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { query } = req;
     if (query.login) {
       this.getAutoSuggestUsers(req, res, next);
@@ -39,7 +39,8 @@ class UsersController {
         query.limit
       );
       const count = await this.userService.getAutoSuggestCount(query.login);
-  
+
+      console.log(users,'<<<<<<<<<<<<<<<<<<<<<<')
       res.status(200).json({
         count,
         users
@@ -61,32 +62,14 @@ class UsersController {
     }
   }
 
-  getUserById = async (
-    req: RequestWithSelectedUser,
-    res: Response,
-    next: NextFunction,
-    id: string
-  ): Promise<void> => {
+  getUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = this.userService.praseUserId(id);
-      const user = await this.userService.getUserById(userId);
-      req.selectedUser = user;
-    } catch(err) {
-      next(err);
-    }
-    next();
-  }
+      const { id } = req.params;
 
-  getUser = (req: RequestWithSelectedUser, res: Response, next: NextFunction): void => {
-    const { id } = req.params;
-    const { selectedUser } = req;
+      const user = await this.userService.getUserById(id);
 
-    try {
-      if (!selectedUser) {
-        throw new ApplicationError(404, `there is no user with id: ${id}`);
-      }
       res.status(200).json({
-        user: usersService.mapperUerInformation(selectedUser)
+        user
       });
     } catch(err) {
       next(err);
@@ -111,17 +94,16 @@ class UsersController {
     
   }
 
-  put = async (req: RequestWithSelectedUser, res: Response, next: NextFunction): Promise<void> => {
-    const { id } = req.params;
-    const { body } = req;
-    const { selectedUser } = req;
-
+  put = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const isLoginFree = await this.userService.canUserBeUpdated(
+      const { id } = req.params;
+      const { body } = req;
+      await this.userService.canUserBeUpdated(
         body.login,
         id
       );
-      const updatedUser = await this.userService.updateUser(selectedUser, body);
+      const updatedUser = await this.userService.updateUser(id, body);
+
       res.status(200).json({
         message: `user id: ${updatedUser.id} has been successfully updated`,
         user: updatedUser
@@ -132,16 +114,11 @@ class UsersController {
     }
   }
 
-  delete = async (req: RequestWithSelectedUser, res: Response, next: NextFunction): Promise<void> => {
-    const { selectedUser } = req;
-    const { id } = req.params;
-
+  delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      if (!selectedUser) {
-        throw new ApplicationError(404, `there is no user with id: ${id}`);
-      }
-  
-      const deletedUser = await this.userService.deleteUser(selectedUser);
+      const { id } = req.params;
+      const deletedUser = await this.userService.deleteUser(id);
+
       res.status(200).json({
         message: 'user has been deleted',
         user: deletedUser

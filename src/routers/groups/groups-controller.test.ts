@@ -75,20 +75,6 @@ describe('Grops Controller', () => {
     );
   });
 
-  // test('getGroupByIdMidleWare should run next', async () => {
-  //   const req = getMockReq() as RequesWithSelectedGroup; 
-  //   const { res, next } = getMockRes();
-
-  //   jest.spyOn(groupsService, 'getGroupById').mockReturnValueOnce(
-  //     Promise.resolve(mockGroups[0])
-  //   );
-
-  //   await controller.getGroupByIdMidleWare(req, res, next, mockGroups[0].id);
-
-  //   expect(next).toHaveBeenCalled();
-  //   expect(req.selectedGroup).toEqual(mockGroups[0])
-  // });
-
   test('deleteGroupById should delete group', async () => {
     const req = getMockReq({ params: { id: mockGroups[0].id } });
     const { res, next } = getMockRes();

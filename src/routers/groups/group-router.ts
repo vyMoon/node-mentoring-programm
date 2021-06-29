@@ -5,10 +5,6 @@ import { createGroupSchema } from '../../validation/groups/create-schema';
 
 export const groupsRouter = express.Router();
 
-// groupsRouter.param(
-//   'id',
-//   groupsController.getGroupByIdMidleWare.bind(groupsController)
-// );
 groupsRouter.get('/', groupsController.get);
 groupsRouter.get('/:id', groupsController.getGroupById);
 groupsRouter.delete('/:id', groupsController.deleteGroupById);
