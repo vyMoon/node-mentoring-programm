@@ -2,9 +2,8 @@ import { Users } from '../../models/users/users.model';
 import { Op, Sequelize } from 'sequelize';
 import { ApplicationError } from '../../error/application-error';
 import { UserForFrontEnd } from '../../types/users/user-for-frontend.interface';
-import { User } from '../../types/users/user.interface';
 
-class UserService {
+export class UserService {
   private readonly usersModel;
 
   constructor(usersModel) {

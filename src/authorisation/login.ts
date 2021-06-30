@@ -1,10 +1,11 @@
+import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { ApplicationError } from '../error/application-error';
 import { usersService } from '../services/users/users.service';
 
 const secret = 'secret string';
 
-export async function login(req, res, next) {
+export async function login(req: Request, res: Response, next: NextFunction): Promise<void> {
   const { body } = req;
 
   try {
@@ -35,8 +36,8 @@ export async function login(req, res, next) {
   }
 }
 
-export function authGuard(req, res, next) {
-  const token: string | undefined = req.headers['x-access-token'];
+export function authGuard(req: Request, res: Response, next: NextFunction): void {
+  const token = req.headers['x-access-token'] as string;
   
   try {
     if (!token) {
@@ -45,7 +46,7 @@ export function authGuard(req, res, next) {
         'forbidden'
       );
     }
-    const isCredetialsCorrect = jwt.verify(token, secret);
+    jwt.verify(token, secret);
     next();
   } catch(err) {
     if (err.message === 'jwt expired') {

@@ -1,16 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { AutoSuggest } from '../../types/users/autosuggest.interface';
-import { usersService } from '../../services/users/users.service';
+import { usersService, UserService } from '../../services/users/users.service';
 import { ApplicationError } from '../../error/application-error';
 
-interface RequestWithSelectedUser extends Request {
-  selectedUser?: any;
-}
-
 export class UsersController {
-  private readonly userService;
+  private readonly userService: UserService;
 
-  constructor(userService) {
+  constructor(userService: UserService) {
     this.userService = userService;
   }
 

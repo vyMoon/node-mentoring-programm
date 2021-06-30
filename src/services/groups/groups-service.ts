@@ -20,7 +20,7 @@ export class GroupsService {
     return groups.map(this.mapGroupInfomation);
   }
 
-  async getGroupById(id) {
+  async getGroupById(id: number) {
     const groupsArray = await this.groups.findAll({
       attrigutes: [
         'id', 'name', 'permissions'
@@ -38,7 +38,6 @@ export class GroupsService {
   }
 
   async changeGroup(groupId, newGroupInformation) {
-    console.log(groupId)
     const id = this.praseGroupId(groupId);
     const groupsArray = await this.groups.findAll({
       attrigutes: [
@@ -61,7 +60,7 @@ export class GroupsService {
     return this.mapGroupInfomation(savedGroup);
   }
 
-  async isNameFree(name: string, id?: string) {
+  async isNameFree(name: string, id?: string): Promise<boolean> {
     const whereOptions: any = {};
     whereOptions.name = name;
     if (id) {
@@ -82,7 +81,7 @@ export class GroupsService {
     return response.length === 0;
   }
 
-  async createGroup(group) {
+  async createGroup(group): Promise<void> {
     group.id = await this.getNexId();
   
     return this.groups.create(

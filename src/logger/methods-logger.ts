@@ -1,6 +1,7 @@
+import { Request, Response, NextFunction } from 'express';
 import { logger, getTime } from './logger';
 
-export const methodsLogger = (req, res, next) => {
+export const methodsLogger = (req: Request, res: Response, next: NextFunction): void => {
   const { method, url, body, query } = req;
   const time = getTime();
   const log = JSON.stringify({

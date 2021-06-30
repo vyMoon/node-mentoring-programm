@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import { groupsService } from '../../services/groups/groups-service';
+import { groupsService, GroupsService } from '../../services/groups/groups-service';
 
 export class GroupsController {
-  private readonly groupsService;
+  private readonly groupsService: GroupsService;
 
-  constructor(groupsService) {
+  constructor(groupsService: GroupsService) {
     this.groupsService = groupsService;
   }
 
@@ -24,7 +24,7 @@ export class GroupsController {
     try {
       const { params } = req;
       const groupId = this.groupsService.praseGroupId(params.id);
-      const group = await this.groupsService.getGroupById(groupId);
+      const group = await this.groupsService.getGroupById(groupId as number);
   
       res.status(200).json({
         group: group,
