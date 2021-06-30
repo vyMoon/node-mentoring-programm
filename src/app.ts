@@ -14,11 +14,11 @@ const app = express();
 const port = 3000;
 
 app.use(express.json());
-app.use(timeout('3s'));
+app.use(timeout('5s'));
 app.use(methodsLogger);
 app.post('/login', login);
-app.use('/users', userRouter);
-app.use('/groups', groupsRouter);
+app.use('/users', authGuard, userRouter);
+app.use('/groups', authGuard, groupsRouter);
 app.use('/', (req, res) => {
     throw new ApplicationError(400, 'Bad Request');
 });
